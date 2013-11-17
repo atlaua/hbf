@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, NamedFieldPuns, RecordWildCards #-}
+{-# LANGUAGE GADTs, GeneralizedNewtypeDeriving, NamedFieldPuns, RecordWildCards #-}
 
 module HBF.Tape.CrumbList
 ( CrumbList
@@ -11,7 +11,7 @@ import Control.Monad.State
 import HBF.Tape
 
 
-newtype CrumbList a = CrumbList {getCrumbList :: State CL a} deriving (Functor, Monad)
+newtype CrumbList a = CrumbList {getCrumbList :: State (CL LCR) a} deriving (Functor, Monad)
 
 runCrumbList :: CrumbList a -> (Pos, [Val])
 runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
@@ -25,31 +25,36 @@ instance Tape CrumbList where
     moveRight = CrumbList $ modify revShiftCL
 
 
-data CL = CL
+data LCR
+data RCL
+
+data CL a = CL
     { left  :: [Val]
     , cur   :: Val
     , right :: [Val]
     }
 
-emptyCL :: CL
+emptyCL :: CL a
 emptyCL = CL { left  = []
              , cur   = 0
              , right = []
              }
 
-getCL :: CL -> (Pos, [Val])
+getCL :: CL LCR -> (Pos, [Val])
 getCL CL {..} = (length left, reverse left ++ [cur] ++ right)
 
-shiftCL :: CL -> CL
+shiftCL :: CL a -> CL a
 shiftCL CL {..} = CL {left=tleft, cur=hleft, right=cur:right}
     where (hleft:tleft) = expand left
 
-revShiftCL :: CL -> CL
-revShiftCL = revCL . shiftCL . revCL
+revShiftCL :: CL LCR -> CL LCR
+revShiftCL = rcl2lcr . shiftCL . lcr2rcl
 
--- Always use this in pairs, otherwise hell breaks loose ;)
-revCL :: CL -> CL
-revCL CL {..} = CL {left = right, cur = cur, right = left}
+lcr2rcl :: CL LCR -> CL RCL
+lcr2rcl CL {..} = CL {left = right, cur = cur, right = left}
+
+rcl2lcr :: CL RCL -> CL LCR
+rcl2lcr CL {..} = CL {left = right, cur = cur, right = left}
 
 expand :: [Val] -> [Val]
 expand [] = [0]
