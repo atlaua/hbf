@@ -27,23 +27,28 @@ getCL CL {..} = reverse left ++ [cur] ++ right
 
 newtype CrumbList a = CrumbList {getCrumbList :: State CL a} deriving (Functor, Monad)
 
+runCrumbList :: CrumbList a -> [Val]
+runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
+
 instance Tape CrumbList where
     readCurVal = CrumbList $ fmap cur get
     writeCurVal v = CrumbList $ modify (\cl -> cl {cur = v})
     modifyCurVal f = CrumbList $ modify (\cl@CL {cur} -> cl {cur = f cur})
 
-    moveLeft = CrumbList $ modify (\CL {..} -> CL { left = tail $ expand left
-                                      , cur = head $ expand left
-                                      , right = cur:right
-                                      })
-    moveRight = CrumbList $ modify (\CL {..} -> CL { left = cur:left
-                                       , cur = head $ expand right
-                                       , right = tail $ expand right
-                                       })
+    moveLeft = CrumbList $ modify shiftCL
+    moveRight = CrumbList $ modify revShiftCL
 
-runCrumbList :: CrumbList a -> [Val]
-runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
+shiftCL :: CL -> CL
+shiftCL CL {..} = CL {left=tleft, cur=hleft, right=cur:right}
+    where (hleft:tleft) = expand left
 
-expand:: [Val] -> [Val]
+revShiftCL :: CL -> CL
+revShiftCL = revCL . shiftCL . revCL
+
+-- Always use this in pairs, otherwise hell breaks loose ;)
+revCL :: CL -> CL
+revCL CL {..} = CL {left = right, cur = cur, right = left}
+
+expand :: [Val] -> [Val]
 expand [] = [0]
 expand a = a
