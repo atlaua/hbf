@@ -8,6 +8,7 @@ module HBF.Tape
 
 import HBF.Types (Val)
 
+
 type Pos = Int
 
 class (Functor t, Monad t) => Tape t where

@@ -4,6 +4,7 @@ module HBF.Types
 , Cmd(..)
 ) where
 
+
 type Val = Int
 type Cmds = [Cmd]
 

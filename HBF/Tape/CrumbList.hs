@@ -10,6 +10,21 @@ import Control.Monad.State
 
 import HBF.Tape
 
+
+newtype CrumbList a = CrumbList {getCrumbList :: State CL a} deriving (Functor, Monad)
+
+runCrumbList :: CrumbList a -> (Pos, [Val])
+runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
+
+instance Tape CrumbList where
+    readCurVal = CrumbList $ fmap cur get
+    writeCurVal v = CrumbList $ modify (\cl -> cl {cur = v})
+    modifyCurVal f = CrumbList $ modify (\cl@CL {cur} -> cl {cur = f cur})
+
+    moveLeft = CrumbList $ modify shiftCL
+    moveRight = CrumbList $ modify revShiftCL
+
+
 data CL = CL
     { left  :: [Val]
     , cur   :: Val
@@ -24,19 +39,6 @@ emptyCL = CL { left  = []
 
 getCL :: CL -> (Pos, [Val])
 getCL CL {..} = (length left, reverse left ++ [cur] ++ right)
-
-newtype CrumbList a = CrumbList {getCrumbList :: State CL a} deriving (Functor, Monad)
-
-runCrumbList :: CrumbList a -> (Pos, [Val])
-runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
-
-instance Tape CrumbList where
-    readCurVal = CrumbList $ fmap cur get
-    writeCurVal v = CrumbList $ modify (\cl -> cl {cur = v})
-    modifyCurVal f = CrumbList $ modify (\cl@CL {cur} -> cl {cur = f cur})
-
-    moveLeft = CrumbList $ modify shiftCL
-    moveRight = CrumbList $ modify revShiftCL
 
 shiftCL :: CL -> CL
 shiftCL CL {..} = CL {left=tleft, cur=hleft, right=cur:right}

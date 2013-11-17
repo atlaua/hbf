@@ -7,6 +7,7 @@ import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
 
 import HBF.Types
 
+
 parseBF :: String -> Either ParseError Cmds
 parseBF = parse bfCmds ""
 
