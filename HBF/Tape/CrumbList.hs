@@ -22,12 +22,12 @@ emptyCL = CL { left  = []
              , right = []
              }
 
-getCL :: CL -> [Val]
-getCL CL {..} = reverse left ++ [cur] ++ right
+getCL :: CL -> (Pos, [Val])
+getCL CL {..} = (length left, reverse left ++ [cur] ++ right)
 
 newtype CrumbList a = CrumbList {getCrumbList :: State CL a} deriving (Functor, Monad)
 
-runCrumbList :: CrumbList a -> [Val]
+runCrumbList :: CrumbList a -> (Pos, [Val])
 runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
 
 instance Tape CrumbList where

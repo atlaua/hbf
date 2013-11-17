@@ -1,11 +1,14 @@
 module HBF.Tape
-( Val
+( Pos
+, Val
 , Tape(..)
 , decCurVal
 , incCurVal
 ) where
 
 import HBF.Types (Val)
+
+type Pos = Int
 
 class (Functor t, Monad t) => Tape t where
     -- Core functions
