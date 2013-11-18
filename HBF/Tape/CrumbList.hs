@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, GeneralizedNewtypeDeriving, NamedFieldPuns, RecordWildCards #-}
+{-# LANGUAGE FunctionalDependencies, GADTs, GeneralizedNewtypeDeriving, MultiParamTypeClasses, NamedFieldPuns, RecordWildCards #-}
 
 module HBF.Tape.CrumbList
 ( CrumbList
@@ -28,6 +28,11 @@ instance Tape CrumbList where
 data LCR
 data RCL
 
+class Rev a b | a -> b
+instance Rev LCR RCL
+instance Rev RCL LCR
+
+
 data CL a = CL
     { left  :: [Val]
     , cur   :: Val
@@ -48,13 +53,10 @@ shiftCL CL {..} = CL {left=tleft, cur=hleft, right=cur:right}
     where (hleft:tleft) = expand left
 
 revShiftCL :: CL LCR -> CL LCR
-revShiftCL = rcl2lcr . shiftCL . lcr2rcl
+revShiftCL = revCL . shiftCL . revCL
 
-lcr2rcl :: CL LCR -> CL RCL
-lcr2rcl CL {..} = CL {left = right, cur = cur, right = left}
-
-rcl2lcr :: CL RCL -> CL LCR
-rcl2lcr CL {..} = CL {left = right, cur = cur, right = left}
+revCL :: (Rev a b) => CL a -> CL b
+revCL CL {..} = CL {left = right, cur = cur, right = left}
 
 expand :: [Val] -> [Val]
 expand [] = [0]
