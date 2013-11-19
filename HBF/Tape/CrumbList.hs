@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, NamedFieldPuns, RecordWildCards #-}
+{-# LANGUAGE FunctionalDependencies, GADTs, GeneralizedNewtypeDeriving, MultiParamTypeClasses, NamedFieldPuns, RecordWildCards #-}
 
 module HBF.Tape.CrumbList
 ( CrumbListT
@@ -12,7 +12,7 @@ import HBF.PrgmIO
 import HBF.Tape
 
 
-newtype CrumbListT m a = CrumbListT {getCrumbListT :: StateT CL m a} deriving (Functor, Monad, MonadTrans)
+newtype CrumbListT m a = CrumbListT {getCrumbListT :: StateT (CL LCR) m a} deriving (Functor, Monad, MonadTrans)
 
 runCrumbListT :: (Functor m, Monad m) => CrumbListT m a -> m (Pos, [Val])
 runCrumbListT cl = getCL <$> execStateT (getCrumbListT cl) emptyCL
@@ -30,30 +30,37 @@ instance (PrgmIO m) => PrgmIO (CrumbListT m) where
     prgmWrite = lift . prgmWrite
 
 
-data CL = CL
+data LCR
+data RCL
+
+class Rev a b | a -> b
+instance Rev LCR RCL
+instance Rev RCL LCR
+
+
+data CL a = CL
     { left  :: [Val]
     , cur   :: Val
     , right :: [Val]
     }
 
-emptyCL :: CL
+emptyCL :: CL a
 emptyCL = CL { left  = []
              , cur   = 0
              , right = []
              }
 
-getCL :: CL -> (Pos, [Val])
+getCL :: CL LCR -> (Pos, [Val])
 getCL CL {..} = (length left, reverse left ++ [cur] ++ right)
 
-shiftCL :: CL -> CL
+shiftCL :: CL a -> CL a
 shiftCL CL {..} = CL {left=tleft, cur=hleft, right=cur:right}
     where (hleft:tleft) = expand left
 
-revShiftCL :: CL -> CL
+revShiftCL :: CL LCR -> CL LCR
 revShiftCL = revCL . shiftCL . revCL
 
--- Always use this in pairs, otherwise hell breaks loose ;)
-revCL :: CL -> CL
+revCL :: (Rev a b) => CL a -> CL b
 revCL CL {..} = CL {left = right, cur = cur, right = left}
 
 expand :: [Val] -> [Val]
