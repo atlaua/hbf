@@ -2,7 +2,6 @@ module HBF.Types
 ( Cmds
 , Cmd(..)
 , Val
-, Pos
 , TapeState
 ) where
 
@@ -20,5 +19,4 @@ data Cmd = MoveLeft
 
 
 type Val = Int
-type Pos = Int
-type TapeState = (Pos, [Val])
+type TapeState = ([Val], Val, [Val])

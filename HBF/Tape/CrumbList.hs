@@ -52,7 +52,7 @@ emptyCL = CL { left  = []
              }
 
 getCL :: CL LCR -> TapeState
-getCL CL {..} = (length left, reverse left ++ [cur] ++ right)
+getCL CL {..} = (reverse left, cur, right)
 
 shiftCL :: CL a -> CL a
 shiftCL CL {..} = CL {left=tleft, cur=hleft, right=cur:right}
