@@ -1,28 +1,33 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, NamedFieldPuns, RecordWildCards #-}
 
 module HBF.Tape.CrumbList
-( CrumbList
-, runCrumbList
+( CrumbListT
+, runCrumbListT
 ) where
 
 import Control.Applicative
 import Control.Monad.State
 
+import HBF.PrgmIO
 import HBF.Tape
 
 
-newtype CrumbList a = CrumbList {getCrumbList :: State CL a} deriving (Functor, Monad)
+newtype CrumbListT m a = CrumbListT {getCrumbListT :: StateT CL m a} deriving (Functor, Monad, MonadTrans)
 
-runCrumbList :: CrumbList a -> (Pos, [Val])
-runCrumbList cl = getCL $ execState (getCrumbList cl) emptyCL
+runCrumbListT :: (Functor m, Monad m) => CrumbListT m a -> m (Pos, [Val])
+runCrumbListT cl = getCL <$> execStateT (getCrumbListT cl) emptyCL
 
-instance Tape CrumbList where
-    readCurVal = CrumbList $ fmap cur get
-    writeCurVal v = CrumbList $ modify (\cl -> cl {cur = v})
-    modifyCurVal f = CrumbList $ modify (\cl@CL {cur} -> cl {cur = f cur})
+instance (Functor m, Monad m) => Tape (CrumbListT m) where
+    readCurVal = CrumbListT $ cur <$> get
+    writeCurVal v = CrumbListT $ modify (\cl -> cl {cur = v})
+    modifyCurVal f = CrumbListT $ modify (\cl@CL {cur} -> cl {cur = f cur})
 
-    moveLeft = CrumbList $ modify shiftCL
-    moveRight = CrumbList $ modify revShiftCL
+    moveLeft = CrumbListT $ modify shiftCL
+    moveRight = CrumbListT $ modify revShiftCL
+
+instance (PrgmIO m) => PrgmIO (CrumbListT m) where
+    prgmRead = lift prgmRead
+    prgmWrite = lift . prgmWrite
 
 
 data CL = CL
