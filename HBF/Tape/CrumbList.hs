@@ -10,11 +10,12 @@ import Control.Monad.State
 
 import HBF.PrgmIO
 import HBF.Tape
+import HBF.Types
 
 
 newtype CrumbListT m a = CrumbListT {getCrumbListT :: StateT (CL LCR) m a} deriving (Functor, Monad, MonadTrans)
 
-runCrumbListT :: (Functor m, Monad m) => CrumbListT m a -> m (Pos, [Val])
+runCrumbListT :: (Functor m, Monad m) => CrumbListT m a -> m TapeState
 runCrumbListT cl = getCL <$> execStateT (getCrumbListT cl) emptyCL
 
 instance (Functor m, Monad m) => Tape (CrumbListT m) where
@@ -50,7 +51,7 @@ emptyCL = CL { left  = []
              , right = []
              }
 
-getCL :: CL LCR -> (Pos, [Val])
+getCL :: CL LCR -> TapeState
 getCL CL {..} = (length left, reverse left ++ [cur] ++ right)
 
 shiftCL :: CL a -> CL a
