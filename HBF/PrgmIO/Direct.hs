@@ -1,10 +1,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module HBF.PrgmIO.Direct
-( CharPgrmIO
-, runCharPgrmIO
-, IntPgrmIO
-, runIntPgrmIO
+( CharPrgmIO
+, runCharPrgmIO
+, IntPrgmIO
+, runIntPrgmIO
 ) where
 
 import Control.Applicative
@@ -13,15 +13,15 @@ import Data.Char
 import HBF.PrgmIO
 
 
-newtype CharPgrmIO a = CharPgrmIO {runCharPgrmIO :: IO a} deriving (Functor, Monad)
+newtype CharPrgmIO a = CharPrgmIO {runCharPrgmIO :: IO a} deriving (Functor, Monad)
 
-instance PrgmIO CharPgrmIO where
-    prgmRead = CharPgrmIO $ putStr "< " *> fmap ord getChar <* putStrLn ""
-    prgmWrite x = CharPgrmIO . putStrLn $ "> " ++ [chr x]
+instance PrgmIO CharPrgmIO where
+    prgmRead = CharPrgmIO $ putStr "< " *> fmap ord getChar <* putStrLn ""
+    prgmWrite x = CharPrgmIO . putStrLn $ "> " ++ [chr x]
 
 
-newtype IntPgrmIO a = IntPgrmIO {runIntPgrmIO :: IO a} deriving (Functor, Monad)
+newtype IntPrgmIO a = IntPrgmIO {runIntPrgmIO :: IO a} deriving (Functor, Monad)
 
-instance PrgmIO IntPgrmIO where
-    prgmRead = IntPgrmIO $ putStr "< " *> fmap read getLine
-    prgmWrite x = IntPgrmIO . putStrLn $ "> " ++ show x
+instance PrgmIO IntPrgmIO where
+    prgmRead = IntPrgmIO $ putStr "< " *> fmap read getLine
+    prgmWrite x = IntPrgmIO . putStrLn $ "> " ++ show x
