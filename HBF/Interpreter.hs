@@ -6,7 +6,7 @@ import Control.Monad
 
 import HBF.PrgmIO
 import HBF.Tape
-import HBF.Types
+import HBF.Types (Cmds, Cmd(..))
 
 
 runCmds :: (PrgmIO m, Tape m) => Cmds -> m ()

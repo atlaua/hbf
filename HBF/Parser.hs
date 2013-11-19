@@ -5,7 +5,7 @@ module HBF.Parser
 import Control.Applicative
 import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
 
-import HBF.Types
+import HBF.Types (Cmds, Cmd(..))
 
 
 parseBF :: String -> Either ParseError Cmds
