@@ -1,4 +1,4 @@
-{-# LANGUAGE FunctionalDependencies, GADTs, GeneralizedNewtypeDeriving, MultiParamTypeClasses, NamedFieldPuns, RecordWildCards #-}
+{-# LANGUAGE BangPatterns, FunctionalDependencies, GADTs, GeneralizedNewtypeDeriving, MultiParamTypeClasses, NamedFieldPuns, RecordWildCards #-}
 
 module HBF.Tape.CrumbList
 ( CrumbListT
@@ -20,8 +20,8 @@ runCrumbListT cl = getCL <$> execStateT (getCrumbListT cl) emptyCL
 
 instance (Functor m, Monad m) => Tape (CrumbListT m) where
     readCurVal = CrumbListT $ cur <$> get
-    writeCurVal v = CrumbListT $ modify (\cl -> cl {cur = v})
-    modifyCurVal f = CrumbListT $ modify (\cl@CL {cur} -> cl {cur = f cur})
+    writeCurVal !v = CrumbListT $ modify (\cl -> cl {cur = v})
+    modifyCurVal f = CrumbListT $ modify (\cl@CL {cur} -> let cur' = f cur in seq cur' cl {cur = cur'})
 
     moveLeft = CrumbListT $ modify shiftCL
     moveRight = CrumbListT $ modify revShiftCL
