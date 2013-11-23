@@ -2,6 +2,7 @@
 
 module Main where
 
+import Control.Monad
 import Text.Parsec.Error
 import System.Console.CmdArgs
 import System.Exit
@@ -17,25 +18,31 @@ import HBF.Types
 main :: IO ()
 main = do
     HBF {..} <- cmdArgsRun hbf
-    cmds <- either exitParseError return $ parseBF cmdStr
+    cmds <- either exitParseError return . parseBF =<< getCmds file cmdStr
 
     hSetBuffering stdin NoBuffering
     hSetBuffering stdout NoBuffering
 
     tape <- runDirectPrgmIO (translate ioType) . runCrumbListT $ runCmds cmds
-    putStrLn $ "\nFinal Tape:\n" ++ show tape
+    unless noFinalTape $ putStrLn $ "\nFinal Tape:\n" ++ show tape
+
+getCmds :: String -> String -> IO String
+getCmds "" cmds = return cmds
+getCmds file _ = readFile file
 
 exitParseError :: ParseError -> IO a
 exitParseError e = putStrLn "Parse error:" >> print e >> exitFailure
 
 
 data IOType = CharIO | IntIO deriving (Data, Typeable)
-data HBF = HBF {ioType :: IOType, cmdStr :: String} deriving (Data, Typeable)
+data HBF = HBF {cmdStr :: String, file :: String, ioType :: IOType, noFinalTape :: Bool} deriving (Data, Typeable)
 
 translate :: IOType -> IOFormat
 translate CharIO = CharFormat
 translate IntIO = IntFormat
 
-hbf = cmdArgsMode $ HBF { ioType = enum [IntIO &= help "Use Int IO (default)", CharIO &= help "Use Char IO"]
-                        , cmdStr = def &= args &= typ "Brainfuck Code"
+hbf = cmdArgsMode $ HBF { cmdStr = def &= args &= typ "Brainfuck Code"
+                        , file = def &= typFile &= help "File to read Brainfuck code from"
+                        , ioType = enum [IntIO &= help "Use Int IO (default)", CharIO &= help "Use Char IO"]
+                        , noFinalTape = False &= help "Don't show final tape state"
                         } &= summary "hbf v0.1 - Experimental Haskell Brainfuck interpreter"
