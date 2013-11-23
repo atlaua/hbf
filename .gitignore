@@ -1,4 +1,7 @@
 *.hi
 *.o
 
+*.tix
+/.hpc
+
 /hbf
