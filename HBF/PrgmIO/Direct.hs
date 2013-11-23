@@ -7,17 +7,28 @@ module HBF.PrgmIO.Direct
 , runIntPrgmIO
 ) where
 
-import Control.Applicative
+import Control.Monad.State
 import Data.Char
 
 import HBF.PrgmIO
 
 
-newtype CharPrgmIO a = CharPrgmIO {runCharPrgmIO :: IO a} deriving (Functor, Monad)
+data CharIOMode = Init | Read | Write deriving Eq
+
+newtype CharPrgmIO a = CharPrgmIO {getCharPrgmIO :: StateT CharIOMode IO a} deriving (Functor, Monad)
+
+runCharPrgmIO :: CharPrgmIO a -> IO a
+runCharPrgmIO = flip evalStateT Init . getCharPrgmIO
 
 instance PrgmIO CharPrgmIO where
-    prgmRead = CharPrgmIO $ putStr "< " *> fmap ord getChar <* putStrLn ""
-    prgmWrite = CharPrgmIO . putChar . chr
+    prgmRead = CharPrgmIO $ modePrompt Read "\n< " >> fmap ord (liftIO getChar)
+    prgmWrite x = CharPrgmIO $ modePrompt Write "\n> " >> liftIO (putChar $ chr x)
+
+modePrompt :: CharIOMode -> String -> StateT CharIOMode IO ()
+modePrompt newMode prompt = do
+    curMode <- get
+    when (curMode /= newMode) $ liftIO (putStr prompt)
+    put newMode
 
 
 newtype IntPrgmIO a = IntPrgmIO {runIntPrgmIO :: IO a} deriving (Functor, Monad)
