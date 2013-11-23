@@ -37,5 +37,5 @@ translate CharIO = CharFormat
 translate IntIO = IntFormat
 
 hbf = cmdArgsMode $ HBF { ioType = enum [IntIO &= help "Use Int IO (default)", CharIO &= help "Use Char IO"]
-                        , cmdStr = def &= args
+                        , cmdStr = def &= args &= typ "Brainfuck Code"
                         } &= summary "hbf - Experimental Haskell Brainfuck interpreter"
