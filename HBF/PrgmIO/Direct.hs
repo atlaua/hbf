@@ -1,34 +1,27 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module HBF.PrgmIO.Direct
-( IOFormat(..)
-, DirectPrgmIO
-, runDirectPrgmIO
+( CharPrgmIO
+, runCharPrgmIO
+, IntPrgmIO
+, runIntPrgmIO
 ) where
 
 import Control.Applicative
-import Control.Monad.Reader
 import Data.Char
 
 import HBF.PrgmIO
 
 
-data IOFormat = CharFormat | IntFormat
+newtype CharPrgmIO a = CharPrgmIO {runCharPrgmIO :: IO a} deriving (Functor, Monad)
 
-readFunc :: IOFormat -> IO Val
-readFunc CharFormat = putStr "< " >> fmap ord getChar <* putStrLn ""
-readFunc IntFormat = putStr "< " >> fmap read getLine
-
-writeFunc :: Val -> IOFormat -> IO ()
-writeFunc x CharFormat = putChar (chr x)
-writeFunc x IntFormat = putStr "> " >> print x
+instance PrgmIO CharPrgmIO where
+    prgmRead = CharPrgmIO $ putStr "< " *> fmap ord getChar <* putStrLn ""
+    prgmWrite = CharPrgmIO . putChar . chr
 
 
-newtype DirectPrgmIO a = DirectPrgmIO {getDirectPrgmIO :: ReaderT IOFormat IO a} deriving (Functor, Monad)
+newtype IntPrgmIO a = IntPrgmIO {runIntPrgmIO :: IO a} deriving (Functor, Monad)
 
-runDirectPrgmIO :: IOFormat -> DirectPrgmIO a -> IO a
-runDirectPrgmIO f = flip runReaderT f . getDirectPrgmIO
-
-instance PrgmIO DirectPrgmIO where
-    prgmRead = DirectPrgmIO $ asks readFunc >>= liftIO
-    prgmWrite x = DirectPrgmIO $ asks (writeFunc x) >>= liftIO
+instance PrgmIO IntPrgmIO where
+    prgmRead = IntPrgmIO $ putStr "< " >> fmap read getLine
+    prgmWrite x = IntPrgmIO . putStrLn $ "> " ++ show x
