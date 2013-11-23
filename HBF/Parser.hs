@@ -5,11 +5,12 @@ module HBF.Parser
 import Control.Applicative
 import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
 
+import HBF.Optimizer
 import HBF.Types (Cmds, Cmd(..))
 
 
 parseBF :: String -> Either ParseError Cmds
-parseBF = parse bfCmds ""
+parseBF = fmap optimize . parse bfCmds ""
 
 bfCmds :: Parser Cmds
 bfCmds = garbage *> many (bfCmd <* garbage)

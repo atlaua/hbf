@@ -2,6 +2,7 @@ module HBF.Tape
 ( Tape(..)
 , decCurVal
 , incCurVal
+, incCurValBy
 , TapeState
 , Val
 ) where
@@ -26,3 +27,6 @@ decCurVal = modifyCurVal (\x -> x-1)
 
 incCurVal :: Tape t => t ()
 incCurVal = modifyCurVal (+1)
+
+incCurValBy :: Tape t => Val -> t ()
+incCurValBy v = modifyCurVal (+v)

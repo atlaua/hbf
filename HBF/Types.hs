@@ -17,6 +17,8 @@ data Cmd = MoveLeft
          | WriteVal
          | ReadVal
          | Loop Cmds
+         -- ^ core, v optimized
+         | IncValBy Val
          deriving (Eq, Show)
 
 

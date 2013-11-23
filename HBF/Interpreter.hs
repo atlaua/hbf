@@ -20,6 +20,8 @@ runCmd DecVal = decCurVal
 runCmd WriteVal = readCurVal >>= prgmWrite
 runCmd ReadVal = prgmRead >>= writeCurVal
 runCmd (Loop cmds) = runLoop cmds
+-- ^ core, v optimized
+runCmd (IncValBy v) = incCurValBy v
 
 runLoop :: (PrgmIO m, Tape m) => Cmds -> m ()
 runLoop cmds = do
