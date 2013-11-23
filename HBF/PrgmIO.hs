@@ -1,5 +1,6 @@
 module HBF.PrgmIO
 ( PrgmIO(..)
+, Val
 ) where
 
 import HBF.Types (Val)
