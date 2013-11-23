@@ -24,7 +24,7 @@ bfCmd = '<' --> MoveLeft
     <|> loop
 
 loop :: Parser Cmd
-loop = char '[' *> fmap Loop bfCmds <* char ']'
+loop = char '[' *> (fmap Loop bfCmds <?> "") <* char ']'
 
 garbage :: Parser ()
 garbage = skipMany (noneOf "<>+-.,[]")
