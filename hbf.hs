@@ -23,7 +23,10 @@ main = do
     hSetBuffering stdin NoBuffering
     hSetBuffering stdout NoBuffering
 
-    tape <- runDirectPrgmIO (translate ioType) . runCrumbListT $ runCmds cmds
+    tape <- case ioType of
+        CharIO -> runCharPrgmIO . runCrumbListT $ runCmds cmds
+        IntIO -> runIntPrgmIO . runCrumbListT $ runCmds cmds
+
     unless noFinalTape $ putStrLn $ "\nFinal Tape:\n" ++ show tape
 
 getCmds :: String -> String -> IO String
@@ -36,10 +39,6 @@ exitParseError e = putStrLn "Parse error:" >> print e >> exitFailure
 
 data IOType = CharIO | IntIO deriving (Data, Typeable)
 data HBF = HBF {cmdStr :: String, file :: String, ioType :: IOType, noFinalTape :: Bool} deriving (Data, Typeable)
-
-translate :: IOType -> IOFormat
-translate CharIO = CharFormat
-translate IntIO = IntFormat
 
 hbf = cmdArgsMode $ HBF { cmdStr = def &= args &= typ "Brainfuck Code"
                         , file = def &= typFile &= help "File to read Brainfuck code from"
