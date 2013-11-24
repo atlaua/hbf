@@ -21,8 +21,8 @@ runCharPrgmIO :: CharPrgmIO a -> IO a
 runCharPrgmIO = flip evalStateT Init . getCharPrgmIO
 
 instance PrgmIO CharPrgmIO where
-    prgmRead = CharPrgmIO $ modePrompt Read "\n< " >> fmap ord (liftIO getChar)
-    prgmWrite x = CharPrgmIO $ modePrompt Write "\n> " >> liftIO (putChar $ chr x)
+    prgmRead = CharPrgmIO $ modePrompt Read "\n< " >> fmap (fromIntegral . ord) (liftIO getChar)
+    prgmWrite x = CharPrgmIO $ modePrompt Write "\n> " >> liftIO (putChar . chr $ fromIntegral x)
 
 modePrompt :: CharIOMode -> String -> StateT CharIOMode IO ()
 modePrompt newMode prompt = do

@@ -22,7 +22,7 @@ class (Functor t, Monad t) => Tape t where
     modifyCurVal f = fmap f readCurVal >>= writeCurVal
 
 decCurVal :: Tape t => t ()
-decCurVal = modifyCurVal pred
+decCurVal = modifyCurVal (\x -> x-1)
 
 incCurVal :: Tape t => t ()
-incCurVal = modifyCurVal succ
+incCurVal = modifyCurVal (+1)
