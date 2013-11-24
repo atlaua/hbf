@@ -2,26 +2,30 @@ module HBF.Optimizer
 ( optimize
 ) where
 
+import Data.Maybe
+
 import HBF.Types
 
 
------
 optimize :: Cmds -> Cmds
+optimize = optimizeInc
 
-optimize [] = []
 
-optimize (IncVal     : IncVal : xs) = optimize $ IncValBy 2     : xs
-optimize (DecVal     : DecVal : xs) = optimize $ IncValBy (-2)  : xs
+optimizeInc :: Cmds -> Cmds
+optimizeInc = mapMaybe incReduce . incMerge . map incExpand
 
-optimize (IncVal     : DecVal : xs) = optimize xs
-optimize (DecVal     : IncVal : xs) = optimize xs
+incExpand :: Cmd -> Cmd
+incExpand IncVal = IncValBy 1
+incExpand DecVal = IncValBy (-1)
+incExpand x = x
 
-optimize (IncValBy n : IncVal : xs) = optimize $ IncValBy (n+1) : xs
-optimize (IncValBy n : DecVal : xs) = optimize $ IncValBy (n-1) : xs
+incMerge :: Cmds -> Cmds
+incMerge [] = []
+incMerge (IncValBy n : IncValBy m : xs) = incMerge $ IncValBy (n+m) : xs
+incMerge (x : xs) = x : incMerge xs
 
-optimize (IncValBy 0    : xs) = optimize xs
-optimize (IncValBy 1    : xs) = IncVal : optimize xs
-optimize (IncValBy (-1) : xs) = DecVal : optimize xs
-
-optimize (x : xs) = x : optimize xs
------
+incReduce :: Cmd -> Maybe Cmd
+incReduce (IncValBy 0   ) = Nothing
+incReduce (IncValBy 1   ) = Just IncVal
+incReduce (IncValBy (-1)) = Just DecVal
+incReduce x = Just x
