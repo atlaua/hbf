@@ -12,7 +12,11 @@ optimize = optimizeInc
 
 
 optimizeInc :: Cmds -> Cmds
-optimizeInc = mapMaybe incReduce . incMerge . map incExpand
+optimizeInc = mapMaybe incReduce . incMerge . map (incExpand . incLoop)
+
+incLoop :: Cmd -> Cmd
+incLoop (Loop l) = Loop $ optimizeInc l
+incLoop x = x
 
 incExpand :: Cmd -> Cmd
 incExpand IncVal = IncValBy 1
