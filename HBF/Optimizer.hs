@@ -29,7 +29,7 @@ incMerge (IncValBy n : IncValBy m : xs) = incMerge $ IncValBy (n+m) : xs
 incMerge (x : xs) = x : incMerge xs
 
 incReduce :: Cmd -> Maybe Cmd
-incReduce (IncValBy 0   ) = Nothing
-incReduce (IncValBy 1   ) = Just IncVal
-incReduce (IncValBy (-1)) = Just DecVal
+incReduce (IncValBy 0) = Nothing
+incReduce (IncValBy 1) = Just IncVal
+incReduce (IncValBy x) | x == -1 = Just DecVal
 incReduce x = Just x
