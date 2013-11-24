@@ -2,9 +2,11 @@ module HBF.Tape
 ( Tape(..)
 , decCurVal
 , incCurVal
+, TapeState
+, Val
 ) where
 
-import HBF.Types (Val)
+import HBF.Types (TapeState, Val)
 
 
 class (Functor t, Monad t) => Tape t where
@@ -20,7 +22,7 @@ class (Functor t, Monad t) => Tape t where
     modifyCurVal f = fmap f readCurVal >>= writeCurVal
 
 decCurVal :: Tape t => t ()
-decCurVal = modifyCurVal pred
+decCurVal = modifyCurVal (\x -> x-1)
 
 incCurVal :: Tape t => t ()
-incCurVal = modifyCurVal succ
+incCurVal = modifyCurVal (+1)

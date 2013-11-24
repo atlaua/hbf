@@ -10,7 +10,6 @@ import Control.Monad.State
 
 import HBF.PrgmIO
 import HBF.Tape
-import HBF.Types (TapeState, Val)
 
 
 newtype CrumbListT m a = CrumbListT {getCrumbListT :: StateT (CL LCR) m a} deriving (Functor, Monad, MonadTrans)

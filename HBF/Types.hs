@@ -5,6 +5,8 @@ module HBF.Types
 , TapeState
 ) where
 
+import Data.Word
+
 
 type Cmds = [Cmd]
 
@@ -18,5 +20,5 @@ data Cmd = MoveLeft
          deriving (Eq, Show)
 
 
-type Val = Int
+type Val = Word
 type TapeState = ([Val], Val, [Val])
