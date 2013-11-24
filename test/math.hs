@@ -5,6 +5,7 @@ module Main where
 import Test.QuickCheck
 
 import HBF.Interpreter
+import HBF.Optimizer
 import HBF.Parser
 import HBF.PrgmIO.Pure
 import HBF.Tape.CrumbList
@@ -33,5 +34,5 @@ data BinaryTest = BinaryTest {name :: String, bf :: String, fun :: Val -> Val ->
 runBinaryTest :: BinaryTest -> AVal -> AVal -> Bool
 runBinaryTest BinaryTest {bf, fun} (AVal a) (AVal b) = bfRes == funRes
     where funRes = fun a b
-          bfRes = head . runPurePrgmIO [a, b] . runCrumbListT . runCmds . getRight $ parseBF bf
+          bfRes = head . runPurePrgmIO [a, b] . runCrumbListT . runCmds . optimize . getRight $ parseBF bf
           getRight (Right x) = x

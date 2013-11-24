@@ -9,6 +9,7 @@ import System.Exit
 import System.IO
 
 import HBF.Interpreter
+import HBF.Optimizer
 import HBF.Parser
 import HBF.PrgmIO.Direct
 import HBF.Tape.CrumbList
@@ -17,7 +18,7 @@ import HBF.Tape.CrumbList
 main :: IO ()
 main = do
     HBF {..} <- cmdArgsRun hbf
-    cmds <- either exitParseError return . parseBF =<< getCmds file cmdStr
+    cmds <- fmap optimize . either exitParseError return . parseBF =<< getCmds file cmdStr
 
     hSetBuffering stdin NoBuffering
     hSetBuffering stdout NoBuffering

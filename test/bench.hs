@@ -3,6 +3,7 @@ module Main where
 import Criterion.Main
 
 import HBF.Interpreter
+import HBF.Optimizer
 import HBF.Parser
 import HBF.PrgmIO.Pure
 import HBF.Tape.CrumbList
@@ -14,7 +15,7 @@ main = defaultMain [ bgroup "fast" [bench "square_100" $ whnf (runBF squareBF) [
                    ]
 
 runBF :: String -> [Val] -> [Val]
-runBF bf input = runPurePrgmIO input  . runCrumbListT . runCmds . getRight $ parseBF bf
+runBF bf input = runPurePrgmIO input . runCrumbListT . runCmds . optimize . getRight $ parseBF bf
     where getRight (Right x) = x
 
 squareBF :: String
