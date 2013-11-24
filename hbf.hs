@@ -43,4 +43,4 @@ hbf = cmdArgsMode $ HBF { cmdStr = def &= args &= typ "Brainfuck Code"
                         , file = def &= typFile &= help "File to read Brainfuck code from"
                         , ioType = enum [IntIO &= help "Use Int IO (default)", CharIO &= help "Use Char IO"]
                         , noFinalTape = False &= help "Don't show final tape state"
-                        } &= summary "hbf v0.2 - Experimental Haskell Brainfuck interpreter"
+                        } &= summary "hbf v0.3 - Experimental Haskell Brainfuck interpreter"
