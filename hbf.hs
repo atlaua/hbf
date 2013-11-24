@@ -12,7 +12,6 @@ import HBF.Interpreter
 import HBF.Parser
 import HBF.PrgmIO.Direct
 import HBF.Tape.CrumbList
-import HBF.Types
 
 
 main :: IO ()

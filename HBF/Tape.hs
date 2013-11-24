@@ -2,9 +2,11 @@ module HBF.Tape
 ( Tape(..)
 , decCurVal
 , incCurVal
+, TapeState
+, Val
 ) where
 
-import HBF.Types (Val)
+import HBF.Types (TapeState, Val)
 
 
 class (Functor t, Monad t) => Tape t where
