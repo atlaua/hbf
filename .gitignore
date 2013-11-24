@@ -1,4 +1,9 @@
 *.hi
 *.o
 
+*.tix
+/.hpc
+
 /hbf
+/test/bench
+/test/math
