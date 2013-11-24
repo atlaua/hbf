@@ -2,11 +2,15 @@ module HBF.Tape
 ( Tape(..)
 , incCurValBy
 , decCurValBy
+, Offset
 , TapeState
 , Val
 ) where
 
-import HBF.Types (TapeState, Val)
+import Control.Monad
+import Data.List
+
+import HBF.Types (Offset, TapeState, Val)
 
 
 class (Functor t, Monad t) => Tape t where
@@ -20,6 +24,21 @@ class (Functor t, Monad t) => Tape t where
     -- Additional functions
     modifyCurVal :: (Val -> Val) -> t ()
     modifyCurVal f = fmap f readCurVal >>= writeCurVal
+
+    moveRightBy :: Offset -> t ()
+    moveRightBy n | n > 0 = replicateM_ n moveRight
+                  | n < 0 = replicateM_ (-n) moveLeft
+                  | n == 0 = return ()
+
+    flatLoop :: [Offset] -> t ()
+    flatLoop xs = readCurVal >>= flatLoop' xs
+
+flatLoop' :: Tape t => [Offset] -> Val -> t ()
+flatLoop' xs v = sequence_ ops >> retractAndZero
+    where (finalPos, ops) = mapAccumL moveAndWrite 0 xs
+          retractAndZero = moveRightBy (-finalPos) >> writeCurVal 0
+          moveAndWrite curPos targetPos = (targetPos, moveRightBy (targetPos-curPos) >> incCurValBy v)
+
 
 incCurValBy :: Tape t => Val -> t ()
 incCurValBy v = modifyCurVal (+v)

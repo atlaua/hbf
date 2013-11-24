@@ -1,6 +1,7 @@
 module HBF.Types
 ( Cmds
 , Cmd(..)
+, Offset
 , Val
 , TapeState
 ) where
@@ -21,9 +22,11 @@ data Cmd = MoveLeft
          -- ^ raw
          | IncValBy Val
          | DecValBy Val
+         | FlatLoop [Offset]
          -- ^ optimized
          deriving Show
 
+type Offset = Int
 
 type Val = Word
 type TapeState = ([Val], Val, [Val])
