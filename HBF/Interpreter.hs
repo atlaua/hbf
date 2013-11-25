@@ -15,13 +15,11 @@ runCmds = mapM_ runCmd
 runCmd :: (PrgmIO m, Tape m) => Cmd -> m ()
 runCmd MoveLeft = moveLeft
 runCmd MoveRight = moveRight
-runCmd IncVal = incCurVal
-runCmd DecVal = decCurVal
+runCmd (IncValBy v) = incCurValBy v
+runCmd (DecValBy v) = decCurValBy v
 runCmd WriteVal = readCurVal >>= prgmWrite
 runCmd ReadVal = prgmRead >>= writeCurVal
 runCmd (Loop cmds) = runLoop cmds
--- ^ core, v optimized
-runCmd (IncValBy v) = incCurValBy v
 
 runLoop :: (PrgmIO m, Tape m) => Cmds -> m ()
 runLoop cmds = do

@@ -12,14 +12,17 @@ type Cmds = [Cmd]
 
 data Cmd = MoveLeft
          | MoveRight
-         | IncVal
-         | DecVal
          | WriteVal
          | ReadVal
          | Loop Cmds
-         -- ^ core, v optimized
+         -- ^ core
+         | IncVal
+         | DecVal
+         -- ^ raw
          | IncValBy Val
-         deriving (Eq, Show)
+         | DecValBy Val
+         -- ^ optimized
+         deriving Show
 
 
 type Val = Word
