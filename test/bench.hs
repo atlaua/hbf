@@ -2,21 +2,14 @@ module Main where
 
 import Criterion.Main
 
-import HBF.Interpreter
-import HBF.Optimizer
-import HBF.Parser
-import HBF.PrgmIO.Pure
-import HBF.Tape.CrumbList
+import HBF.Test
+import HBF.Types (Val)
 
 
 main :: IO ()
-main = defaultMain [ bgroup "fast" [bench "square_100" $ whnf (runBF squareBF) [100]]
-                   , bgroup "slow" [bench "square_500" $ whnf (runBF squareBF) [500]]
+main = defaultMain [ bgroup "opt" [benchSqu True 1000, benchSqu True 5000]
+                   , bgroup "raw" [benchSqu False 50, benchSqu False 100]
                    ]
 
-runBF :: String -> [Val] -> [Val]
-runBF bf input = runPurePrgmIO input . runCrumbListT . runCmds . optimize . getRight $ parseBF bf
-    where getRight (Right x) = x
-
-squareBF :: String
-squareBF = ",[->+>+<<]>[->[->+>+<<]>>[-<<+>>]<[->>+<<]<<]>>>>."
+benchSqu :: Bool -> Val -> Benchmark
+benchSqu opt n = bench ("squ" ++ show n) $ whnf (runTestBF opt [n]) bfSqu

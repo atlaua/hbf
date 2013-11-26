@@ -2,6 +2,7 @@
 
 module HBF.Optimizer
 ( optimize
+, optimizeIf
 ) where
 
 import Control.Monad
@@ -14,6 +15,10 @@ import qualified Data.IntMap.Strict as IM
 
 import HBF.Types (Cmds, Cmd(..), Offset)
 
+
+optimizeIf :: Bool -> Cmds -> Cmds
+optimizeIf False = id
+optimizeIf True = optimize
 
 optimize :: Cmds -> Cmds
 optimize = optimizeLoops . optimizeInc

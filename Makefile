@@ -14,4 +14,4 @@ test:
 
 bench:
 	ghc --make -O2 test/bench.hs
-	test/bench fast
+	test/bench opt

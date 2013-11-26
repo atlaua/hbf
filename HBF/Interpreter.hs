@@ -17,6 +17,8 @@ runCmd MoveLeft = moveLeft
 runCmd MoveRight = moveRight
 runCmd (IncValBy v) = incCurValBy v
 runCmd (DecValBy v) = decCurValBy v
+runCmd IncVal = incCurValBy 1
+runCmd DecVal = decCurValBy 1
 runCmd WriteVal = readCurVal >>= prgmWrite
 runCmd ReadVal = prgmRead >>= writeCurVal
 runCmd (Loop cmds) = runLoop cmds
