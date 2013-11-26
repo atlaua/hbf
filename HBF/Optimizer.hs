@@ -1,8 +1,16 @@
+{-# LANGUAGE NamedFieldPuns, RecordWildCards #-}
+
 module HBF.Optimizer
 ( optimize
 ) where
 
+import Control.Monad
 import Data.List
+import Data.Maybe
+
+import qualified Data.Foldable as F
+import Data.IntMap.Strict (IntMap)
+import qualified Data.IntMap.Strict as IM
 
 import HBF.Types (Cmds, Cmd(..), Offset)
 
@@ -30,28 +38,39 @@ incMerge (DecValBy n : DecValBy m : xs) = incMerge $ DecValBy (n+m) : xs
 incMerge (x : xs) = x : incMerge xs
 
 
+data FlatLoop = FlatLoop {pos :: Offset, factorMap :: IntMap Int}
+
 optimizeLoops :: Cmds -> Cmds
 optimizeLoops = map optimizeLoop
 
 optimizeLoop :: Cmd -> Cmd
-optimizeLoop (Loop l) | isPureLoop l = flattenLoop l
-                      | otherwise = Loop (optimizeLoops l)
+optimizeLoop (Loop l) = fromMaybe (Loop ol) $ flattenLoop ol
+    where ol = optimizeLoops l
 optimizeLoop x = x
 
-isPureLoop :: Cmds -> Bool
-isPureLoop = (== Just 0) . fmap sum . mapM moveVal
-    where moveVal MoveRight = Just 1
-          moveVal MoveLeft = Just (-1)
-          moveVal ReadVal = Nothing
-          moveVal WriteVal = Nothing
-          moveVal (Loop _) = Nothing
-          moveVal x = Just 0
+flattenLoop :: Cmds -> Maybe Cmd
+flattenLoop = fmap packFactors . checkLoop <=< flattenLoop'
 
-flattenLoop :: Cmds -> Cmd
-flattenLoop = FlatLoop . snd . foldl' flattenLoop' (0, [])
+flattenLoop' :: Cmds -> Maybe FlatLoop
+flattenLoop' = foldM go FlatLoop{pos = 0, factorMap = IM.empty}
+    where go fl@FlatLoop{pos} MoveLeft  = Just fl{pos = pos-1}
+          go fl@FlatLoop{pos} MoveRight = Just fl{pos = pos+1}
+          go fl@FlatLoop{..} (IncValBy n) = Just fl{factorMap = IM.insertWith (+) pos (fromIntegral    n) factorMap}
+          go fl@FlatLoop{..} (DecValBy n) = Just fl{factorMap = IM.insertWith (+) pos (fromIntegral $ -n) factorMap}
+          go _ ReadVal      = Nothing
+          go _ WriteVal     = Nothing
+          go _ (Loop _)     = Nothing
+          go _ (MoveLoop _) = Nothing
 
-flattenLoop' :: (Offset, [Offset]) -> Cmd -> (Offset, [Offset])
-flattenLoop' (0  , xs) (DecValBy 1) = (0    ,     xs)
-flattenLoop' (pos, xs) MoveRight    = (pos+1,     xs)
-flattenLoop' (pos, xs) MoveLeft     = (pos-1,     xs)
-flattenLoop' (pos, xs) (IncValBy 1) = (pos  , pos:xs)
+checkLoop :: FlatLoop -> Maybe (IntMap Int)
+checkLoop FlatLoop{..} | pos == 0 = adjustChanges (IM.delete 0 factorMap) =<< IM.lookup 0 factorMap
+                       | otherwise = Nothing
+
+adjustChanges :: IntMap Int -> Int -> Maybe (IntMap Int)
+adjustChanges _         0         = Nothing
+adjustChanges factorMap (-1)      = Just factorMap
+adjustChanges factorMap ctrChange = Just $ fmap (*(-ctrChange)) factorMap
+
+packFactors :: IntMap Int -> Cmd
+packFactors factorMap | F.all (==1) factorMap = MoveLoop $ IM.keys factorMap
+                      | otherwise = undefined

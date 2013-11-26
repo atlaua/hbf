@@ -30,11 +30,11 @@ class (Functor t, Monad t) => Tape t where
                   | n < 0 = replicateM_ (-n) moveLeft
                   | n == 0 = return ()
 
-    flatLoop :: [Offset] -> t ()
-    flatLoop xs = readCurVal >>= flatLoop' xs
+    doMoveLoop :: [Offset] -> t ()
+    doMoveLoop xs = readCurVal >>= doMoveLoop' xs
 
-flatLoop' :: Tape t => [Offset] -> Val -> t ()
-flatLoop' xs v = sequence_ ops >> retractAndZero
+doMoveLoop' :: Tape t => [Offset] -> Val -> t ()
+doMoveLoop' xs v = sequence_ ops >> retractAndZero
     where (finalPos, ops) = mapAccumL moveAndWrite 0 xs
           retractAndZero = moveRightBy (-finalPos) >> writeCurVal 0
           moveAndWrite curPos targetPos = (targetPos, moveRightBy (targetPos-curPos) >> incCurValBy v)

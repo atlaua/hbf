@@ -22,7 +22,7 @@ data Cmd = MoveLeft
          -- ^ raw
          | IncValBy Val
          | DecValBy Val
-         | FlatLoop [Offset]
+         | MoveLoop [Offset]
          -- ^ optimized
          deriving Show
 
